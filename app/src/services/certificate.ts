@@ -337,9 +337,9 @@ class CertificateService {
     if (isSupabaseEnabled() && supabase) {
       const { count: totalCertificates } = await supabase.from('certificates').select('*', { count: 'exact', head: true });
       const { data: certs } = await supabase.from('certificates').select('institution_id, created_at');
-      const institutions = new Set((certs ?? []).map(c => c.institution_id));
+      const institutions = new Set((certs ?? []).map((c: { institution_id: string }) => c.institution_id));
       const now = new Date();
-      const verifiedThisMonth = (certs ?? []).filter(c => {
+      const verifiedThisMonth = (certs ?? []).filter((c: { created_at: string }) => {
         const d = new Date(c.created_at);
         return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
       }).length;
@@ -363,7 +363,7 @@ class CertificateService {
   async getRecentActivityAsync(limit: number = 10): Promise<ActivityLog[]> {
     if (isSupabaseEnabled() && supabase) {
       const { data } = await supabase.from('activity_logs').select('*').order('timestamp', { ascending: false }).limit(limit);
-      return (data ?? []).map(row => ({
+      return (data ?? []).map((row: { id: string; user_id: string; user_name: string; action: string; details: string; timestamp: string; type: ActivityLog['type'] }) => ({
         id: row.id,
         userId: row.user_id,
         userName: row.user_name,
@@ -399,7 +399,7 @@ class CertificateService {
       const q = query.toLowerCase();
       return (data ?? [])
         .filter(
-          c =>
+          (c: { student_name?: string; student_email?: string; course_name?: string; unique_id?: string; institution_name?: string }) =>
             c.student_name?.toLowerCase().includes(q) ||
             c.student_email?.toLowerCase().includes(q) ||
             c.course_name?.toLowerCase().includes(q) ||
@@ -428,9 +428,9 @@ class CertificateService {
       const certs = data ?? [];
       return {
         total: certs.length,
-        active: certs.filter(c => c.status === 'active').length,
-        revoked: certs.filter(c => c.status === 'revoked').length,
-        expired: certs.filter(c => c.status === 'expired').length,
+        active: certs.filter((c: { status: string }) => c.status === 'active').length,
+        revoked: certs.filter((c: { status: string }) => c.status === 'revoked').length,
+        expired: certs.filter((c: { status: string }) => c.status === 'expired').length,
       };
     }
     return this.getCertificateStatsByInstitution(institutionId);

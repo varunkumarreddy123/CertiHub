@@ -324,7 +324,7 @@ class AuthService {
     return this.users.filter(u => u.role === role);
   }
 
-  async changePassword(userId: string): Promise<void> {
+  async changePassword(_userId: string): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, 500));
   }
 }

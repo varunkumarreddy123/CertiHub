@@ -8,7 +8,7 @@ const MESSAGES_KEY = 'certichain_messages';
 async function getParticipantProfiles(ids: string[]): Promise<{ id: string; name: string; role: User['role']; institutionName?: string }[]> {
   if (!supabase || ids.length === 0) return [];
   const { data } = await supabase.from('profiles').select('id, name, role, institution_name').in('id', ids);
-  return (data ?? []).map(p => ({
+  return (data ?? []).map((p: { id: string; name: string; role: string; institution_name: string | null }) => ({
     id: p.id,
     name: p.name,
     role: p.role as User['role'],
@@ -268,7 +268,7 @@ export const messagingService = {
         .select('*')
         .eq('conversation_id', conversationId)
         .order('timestamp', { ascending: true });
-      return (data ?? []).map(m => ({
+      return (data ?? []).map((m: { id: string; conversation_id: string; sender_id: string; sender_name: string; sender_role: string; recipient_id: string; recipient_name: string; content: string; timestamp: string; is_read: boolean }) => ({
         id: m.id,
         conversationId: m.conversation_id,
         senderId: m.sender_id,
@@ -317,7 +317,7 @@ export const messagingService = {
     if (!currentUser) return 0;
     if (isSupabaseEnabled() && supabase) {
       const { data } = await supabase.from('conversations').select('unread_count').contains('participant_ids', [currentUser.id]);
-      return (data ?? []).reduce((sum, c) => sum + (c.unread_count ?? 0), 0);
+      return (data ?? []).reduce((sum: number, c: { unread_count?: number }) => sum + (c.unread_count ?? 0), 0);
     }
     return this.getUnreadCount();
   },
