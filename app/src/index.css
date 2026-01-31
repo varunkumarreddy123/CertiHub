@@ -1,0 +1,175 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* CertiChain Dark Theme */
+    --background: 0 0% 10%; /* #1A1A1A */
+    --foreground: 0 0% 96%; /* #F5F5F5 */
+    --card: 0 0% 15%; /* #262626 */
+    --card-foreground: 0 0% 96%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 45 65% 53%; /* #D4AF37 Gold */
+    --primary-foreground: 0 0% 10%;
+    --secondary: 0 0% 29%; /* #4A4A4A */
+    --secondary-foreground: 0 0% 96%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 45 65% 53%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 70% 50%; /* #DC3545 */
+    --destructive-foreground: 0 0% 98%;
+    --success: 134 61% 41%; /* #28A745 */
+    --success-foreground: 0 0% 98%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 45 65% 53%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-[#1A1A1A] text-[#F5F5F5] antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Custom selection color */
+  ::selection {
+    background: rgba(212, 175, 55, 0.3);
+    color: #F5F5F5;
+  }
+}
+
+@layer components {
+  /* Glass morphism effect */
+  .glass {
+    @apply bg-[#4A4A4A]/20 backdrop-blur-md border border-[#4A4A4A]/50;
+  }
+  
+  /* Gold accent button */
+  .btn-primary {
+    @apply px-6 py-3 bg-[#D4AF37] text-[#1A1A1A] rounded-lg font-semibold 
+           hover:bg-[#C4A030] transition-all duration-200 
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  
+  /* Secondary button */
+  .btn-secondary {
+    @apply px-6 py-3 border border-[#4A4A4A] text-[#F5F5F5] rounded-lg font-semibold 
+           hover:bg-[#4A4A4A]/50 transition-all duration-200;
+  }
+  
+  /* Input field */
+  .input-field {
+    @apply w-full px-4 py-3 bg-[#1A1A1A] border border-[#4A4A4A] rounded-lg 
+           text-[#F5F5F5] placeholder-[#F5F5F5]/40 
+           focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] 
+           transition-colors;
+  }
+  
+  /* Card */
+  .card {
+    @apply bg-[#4A4A4A]/20 border border-[#4A4A4A]/50 rounded-xl 
+           hover:border-[#D4AF37]/30 transition-colors;
+  }
+  
+  /* Status badges */
+  .badge-success {
+    @apply px-2 py-1 bg-[#28A745]/20 text-[#28A745] rounded-full text-xs font-medium;
+  }
+  
+  .badge-error {
+    @apply px-2 py-1 bg-[#DC3545]/20 text-[#DC3545] rounded-full text-xs font-medium;
+  }
+  
+  .badge-warning {
+    @apply px-2 py-1 bg-[#D4AF37]/20 text-[#D4AF37] rounded-full text-xs font-medium;
+  }
+  
+  .badge-neutral {
+    @apply px-2 py-1 bg-[#4A4A4A]/50 text-[#F5F5F5] rounded-full text-xs font-medium;
+  }
+}
+
+@layer utilities {
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out forwards;
+  }
+  
+  .animate-pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+  
+  /* Gradient text */
+  .text-gradient-gold {
+    @apply bg-gradient-to-r from-[#D4AF37] to-[#F5F5F5] bg-clip-text text-transparent;
+  }
+  
+  /* Hide scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(212, 175, 55, 0.4);
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}
