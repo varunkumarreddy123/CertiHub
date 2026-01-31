@@ -376,6 +376,22 @@ class CertificateService {
     return this.activityLog.slice(0, limit);
   }
 
+  async getAllActivityAsync(): Promise<ActivityLog[]> {
+    if (isSupabaseEnabled() && supabase) {
+      const { data } = await supabase.from('activity_logs').select('*').order('timestamp', { ascending: false });
+      return (data ?? []).map((row: { id: string; user_id: string; user_name: string; action: string; details: string; timestamp: string; type: ActivityLog['type'] }) => ({
+        id: row.id,
+        userId: row.user_id,
+        userName: row.user_name,
+        action: row.action,
+        details: row.details,
+        timestamp: row.timestamp,
+        type: row.type,
+      }));
+    }
+    return [...this.activityLog];
+  }
+
   getActivityByUser(userId: string): ActivityLog[] {
     if (isSupabaseEnabled()) return [];
     return this.activityLog.filter(log => log.userId === userId);

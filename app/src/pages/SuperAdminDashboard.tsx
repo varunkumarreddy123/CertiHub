@@ -30,17 +30,17 @@ export default function SuperAdminDashboard({ onNavigate }: SuperAdminDashboardP
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [allUsers, allCerts, dashboardStats, recentActivity, records] = await Promise.all([
+      const [allUsers, allCerts, dashboardStats, allActivity, records] = await Promise.all([
         authService.getAllUsersAsync(),
         certificateService.getAllCertificatesAsync(),
         certificateService.getDashboardStatsAsync(),
-        certificateService.getRecentActivityAsync(20),
+        certificateService.getAllActivityAsync(),
         blockchainService.getAllRecordsAsync(),
       ]);
       setUsers(allUsers);
       setCertificates(allCerts);
       setStats(dashboardStats);
-      setActivity(recentActivity);
+      setActivity(allActivity);
       setBlockchainRecords(records);
     } finally {
       setIsLoading(false);
