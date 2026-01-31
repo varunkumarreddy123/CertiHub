@@ -67,7 +67,7 @@ class CertificateService {
     localStorage.setItem(ACTIVITY_LOG_KEY, JSON.stringify(this.activityLog));
   }
 
-  private addActivityLog(user: User, action: string, details: string, type: ActivityLog['type']) {
+  private async addActivityLog(user: User, action: string, details: string, type: ActivityLog['type']) {
     const log: ActivityLog = {
       id: uuidv4(),
       userId: user.id,
@@ -78,15 +78,18 @@ class CertificateService {
       type,
     };
     if (isSupabaseEnabled() && supabase) {
-      void supabase.from('activity_logs').insert({
+      const { error } = await supabase.from('activity_logs').insert({
         id: log.id,
-        user_id: user.id,
+        user_id: String(user.id),
         user_name: user.name,
         action,
         details,
         type,
         timestamp: log.timestamp,
       });
+      if (error) {
+        console.error('Failed to insert activity log:', error);
+      }
     } else {
       this.activityLog.unshift(log);
       this.saveActivityLog();
@@ -140,7 +143,7 @@ class CertificateService {
         hash,
         block_number: null,
       });
-      this.addActivityLog(
+      await this.addActivityLog(
         admin,
         'Certificate Issued',
         `Issued certificate ${uniqueId} to ${certificateData.studentName} for ${certificateData.courseName}`,
@@ -160,7 +163,7 @@ class CertificateService {
     certificate.blockchainTxHash = hash;
     this.certificates.push(certificate);
     this.saveCertificates();
-    this.addActivityLog(
+    await this.addActivityLog(
       admin,
       'Certificate Issued',
       `Issued certificate ${uniqueId} to ${certificateData.studentName} for ${certificateData.courseName}`,
@@ -247,9 +250,9 @@ class CertificateService {
     }
     const blockchainResult = await blockchainService.verifyCertificate(uniqueId, certificate);
     if (verifiedBy) {
-      this.addActivityLog(verifiedBy, 'Certificate Verified', `Verified certificate ${uniqueId} for ${certificate.studentName}`, 'verification');
+      await this.addActivityLog(verifiedBy, 'Certificate Verified', `Verified certificate ${uniqueId} for ${certificate.studentName}`, 'verification');
     } else {
-      this.addActivityLog(
+      await this.addActivityLog(
         { id: 'public', name: 'Public User', email: '', role: 'user', createdAt: '' },
         'Public Certificate Verification',
         `Public verification of certificate ${uniqueId}`,
@@ -272,7 +275,7 @@ class CertificateService {
         .select()
         .single();
       if (error) throw new Error('Certificate not found');
-      this.addActivityLog(admin, 'Certificate Revoked', `Revoked certificate ${data.unique_id}. Reason: ${reason}`, 'certificate');
+      await this.addActivityLog(admin, 'Certificate Revoked', `Revoked certificate ${data.unique_id}. Reason: ${reason}`, 'certificate');
       return mapRowToCertificate(data);
     }
     const certificate = this.getCertificateById(certificateId);
@@ -280,7 +283,7 @@ class CertificateService {
     certificate.status = 'revoked';
     certificate.updatedAt = new Date().toISOString();
     this.saveCertificates();
-    this.addActivityLog(admin, 'Certificate Revoked', `Revoked certificate ${certificate.uniqueId}. Reason: ${reason}`, 'certificate');
+    await this.addActivityLog(admin, 'Certificate Revoked', `Revoked certificate ${certificate.uniqueId}. Reason: ${reason}`, 'certificate');
     return certificate;
   }
 
@@ -298,14 +301,14 @@ class CertificateService {
       if (updates.status !== undefined) row.status = updates.status;
       const { data, error } = await supabase.from('certificates').update(row).eq('id', certificateId).select().single();
       if (error) throw new Error('Certificate not found');
-      this.addActivityLog(admin, 'Certificate Updated', `Updated certificate ${data.unique_id}`, 'certificate');
+      await this.addActivityLog(admin, 'Certificate Updated', `Updated certificate ${data.unique_id}`, 'certificate');
       return mapRowToCertificate(data);
     }
     const certificate = this.getCertificateById(certificateId);
     if (!certificate) throw new Error('Certificate not found');
     Object.assign(certificate, updates, { updatedAt: new Date().toISOString() });
     this.saveCertificates();
-    this.addActivityLog(admin, 'Certificate Updated', `Updated certificate ${certificate.uniqueId}`, 'certificate');
+    await this.addActivityLog(admin, 'Certificate Updated', `Updated certificate ${certificate.uniqueId}`, 'certificate');
     return certificate;
   }
 
@@ -378,7 +381,11 @@ class CertificateService {
 
   async getAllActivityAsync(): Promise<ActivityLog[]> {
     if (isSupabaseEnabled() && supabase) {
-      const { data } = await supabase.from('activity_logs').select('*').order('timestamp', { ascending: false });
+      const { data, error } = await supabase.from('activity_logs').select('*').order('timestamp', { ascending: false });
+      if (error) {
+        console.error('Failed to fetch activity logs:', error);
+        return [];
+      }
       return (data ?? []).map((row: { id: string; user_id: string; user_name: string; action: string; details: string; timestamp: string; type: ActivityLog['type'] }) => ({
         id: row.id,
         userId: row.user_id,
