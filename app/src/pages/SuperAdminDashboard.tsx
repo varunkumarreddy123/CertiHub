@@ -21,6 +21,7 @@ export default function SuperAdminDashboard({ onNavigate }: SuperAdminDashboardP
   const [blockchainRecords, setBlockchainRecords] = useState<BlockchainRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [blockchainSearch, setBlockchainSearch] = useState('');
 
   useEffect(() => {
     loadData();
@@ -34,7 +35,7 @@ export default function SuperAdminDashboard({ onNavigate }: SuperAdminDashboardP
         certificateService.getAllCertificatesAsync(),
         certificateService.getDashboardStatsAsync(),
         certificateService.getRecentActivityAsync(20),
-        Promise.resolve(blockchainService.getAllRecords()),
+        blockchainService.getAllRecordsAsync(),
       ]);
       setUsers(allUsers);
       setCertificates(allCerts);
@@ -329,67 +330,134 @@ export default function SuperAdminDashboard({ onNavigate }: SuperAdminDashboardP
     </div>
   );
 
+  const filteredBlockchainRecords = blockchainRecords.filter(
+    (r) =>
+      !blockchainSearch ||
+      r.uniqueId.toLowerCase().includes(blockchainSearch.toLowerCase()) ||
+      r.studentName.toLowerCase().includes(blockchainSearch.toLowerCase()) ||
+      r.institutionName.toLowerCase().includes(blockchainSearch.toLowerCase()) ||
+      r.courseName.toLowerCase().includes(blockchainSearch.toLowerCase()) ||
+      r.hash.toLowerCase().includes(blockchainSearch.toLowerCase())
+  );
+
   const renderBlockchain = () => (
     <div className="space-y-6">
+      {/* Stats & Header */}
       <div className="bg-[#4A4A4A]/20 border border-[#4A4A4A]/50 rounded-xl p-6">
-        <div className="flex items-center space-x-3 mb-6">
-          <div className="w-12 h-12 bg-[#D4AF37]/10 rounded-lg flex items-center justify-center">
-            <Blocks className="h-6 w-6 text-[#D4AF37]" />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-[#D4AF37]/10 rounded-lg flex items-center justify-center">
+              <Blocks className="h-6 w-6 text-[#D4AF37]" />
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-[#F5F5F5]">Blockchain Anchors</h3>
+              <p className="text-[#F5F5F5]/60">Keccak256-hashed certificate records for tamper verification</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-xl font-semibold text-[#F5F5F5]">Blockchain Status</h3>
-            <p className="text-[#F5F5F5]/60">Live blockchain records</p>
-          </div>
+          <button
+            onClick={loadData}
+            disabled={isLoading}
+            className="px-4 py-2 bg-[#D4AF37]/20 text-[#D4AF37] rounded-lg hover:bg-[#D4AF37]/30 transition-colors text-sm font-medium"
+          >
+            Refresh
+          </button>
         </div>
 
-        <div className="grid sm:grid-cols-3 gap-4 mb-6">
-          <div className="p-4 bg-[#1A1A1A] rounded-lg">
-            <p className="text-sm text-[#F5F5F5]/50">Total Blocks</p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="p-4 bg-[#1A1A1A] rounded-lg border border-[#4A4A4A]/30">
+            <p className="text-sm text-[#F5F5F5]/50">Total Anchors</p>
             <p className="text-2xl font-bold text-[#D4AF37]">{blockchainRecords.length}</p>
           </div>
-          <div className="p-4 bg-[#1A1A1A] rounded-lg">
-            <p className="text-sm text-[#F5F5F5]/50">Certificates Stored</p>
+          <div className="p-4 bg-[#1A1A1A] rounded-lg border border-[#4A4A4A]/30">
+            <p className="text-sm text-[#F5F5F5]/50">Certificates Anchored</p>
             <p className="text-2xl font-bold text-[#28A745]">{blockchainRecords.length}</p>
           </div>
-          <div className="p-4 bg-[#1A1A1A] rounded-lg">
-            <p className="text-sm text-[#F5F5F5]/50">Network Status</p>
+          <div className="p-4 bg-[#1A1A1A] rounded-lg border border-[#4A4A4A]/30">
+            <p className="text-sm text-[#F5F5F5]/50">Hash Algorithm</p>
+            <p className="text-lg font-bold text-[#F5F5F5]">Keccak256</p>
+          </div>
+          <div className="p-4 bg-[#1A1A1A] rounded-lg border border-[#4A4A4A]/30">
+            <p className="text-sm text-[#F5F5F5]/50">Status</p>
             <p className="text-lg font-bold text-[#28A745]">Operational</p>
           </div>
         </div>
       </div>
 
+      {/* Block List */}
       <div>
-        <h3 className="text-lg font-semibold text-[#F5F5F5] mb-4">Recent Blocks</h3>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <h3 className="text-lg font-semibold text-[#F5F5F5]">All Anchored Blocks</h3>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#F5F5F5]/40" />
+            <input
+              type="text"
+              value={blockchainSearch}
+              onChange={(e) => setBlockchainSearch(e.target.value)}
+              placeholder="Search by ID, student, institution..."
+              className="pl-9 pr-4 py-2 bg-[#4A4A4A]/20 border border-[#4A4A4A]/50 rounded-lg text-sm text-[#F5F5F5] placeholder-[#F5F5F5]/40 focus:outline-none focus:border-[#D4AF37] transition-colors w-full sm:w-64"
+            />
+          </div>
+        </div>
         <div className="space-y-3">
-          {blockchainRecords.slice(-10).reverse().map((record) => (
-            <div key={record.certificateId} className="p-4 bg-[#4A4A4A]/20 border border-[#4A4A4A]/50 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <Hash className="h-4 w-4 text-[#D4AF37]" />
-                  <span className="text-sm text-[#F5F5F5]/50">Block #{record.blockNumber}</span>
+          {(blockchainSearch ? filteredBlockchainRecords : blockchainRecords)
+            .slice()
+            .reverse()
+            .map((record) => (
+              <div
+                key={record.certificateId}
+                className="p-4 bg-[#4A4A4A]/20 border border-[#4A4A4A]/50 rounded-lg hover:border-[#D4AF37]/30 transition-colors"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+                  <div className="flex items-center space-x-2">
+                    <Hash className="h-4 w-4 text-[#D4AF37] flex-shrink-0" />
+                    <span className="text-sm text-[#F5F5F5]/50">Block #{record.blockNumber ?? '—'}</span>
+                    <button
+                      onClick={() => onNavigate('verify', { uniqueId: record.uniqueId })}
+                      className="ml-2 px-2 py-1 bg-[#D4AF37]/20 text-[#D4AF37] rounded text-xs hover:bg-[#D4AF37]/30 transition-colors"
+                    >
+                      Verify
+                    </button>
+                  </div>
+                  <span className="text-xs text-[#F5F5F5]/40">
+                    {record.timestamp ? new Date(record.timestamp).toLocaleString() : '—'}
+                  </span>
                 </div>
-                <span className="text-xs text-[#F5F5F5]/40">
-                  {new Date(record.timestamp).toLocaleString()}
-                </span>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-2 text-sm">
-                <div>
-                  <span className="text-[#F5F5F5]/50">Certificate: </span>
-                  <span className="text-[#F5F5F5] font-mono">{record.uniqueId}</span>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2 text-sm">
+                  <div>
+                    <span className="text-[#F5F5F5]/50">Certificate: </span>
+                    <span className="text-[#F5F5F5] font-mono text-xs">{record.uniqueId}</span>
+                  </div>
+                  <div>
+                    <span className="text-[#F5F5F5]/50">Student: </span>
+                    <span className="text-[#F5F5F5]">{record.studentName || '—'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[#F5F5F5]/50">Course: </span>
+                    <span className="text-[#F5F5F5]">{record.courseName || '—'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[#F5F5F5]/50">Institution: </span>
+                    <span className="text-[#F5F5F5] truncate" title={record.institutionName}>
+                      {record.institutionName || '—'}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-[#F5F5F5]/50">Student: </span>
-                  <span className="text-[#F5F5F5]">{record.studentName}</span>
+                <div className="mt-2 p-2 bg-[#1A1A1A] rounded flex items-start gap-2">
+                  <span className="text-xs text-[#F5F5F5]/50 flex-shrink-0">Hash:</span>
+                  <span className="text-xs font-mono text-[#D4AF37] break-all">{record.hash}</span>
                 </div>
               </div>
-              <div className="mt-2 p-2 bg-[#1A1A1A] rounded">
-                <span className="text-xs text-[#F5F5F5]/50">Hash: </span>
-                <span className="text-xs font-mono text-[#D4AF37] break-all">{record.hash}</span>
-              </div>
+            ))}
+          {(blockchainSearch ? filteredBlockchainRecords : blockchainRecords).length === 0 && (
+            <div className="text-center py-12 bg-[#4A4A4A]/10 border border-[#4A4A4A]/30 rounded-lg">
+              <Blocks className="h-12 w-12 text-[#F5F5F5]/30 mx-auto mb-3" />
+              <p className="text-[#F5F5F5]/60">
+                {blockchainSearch ? 'No matching blocks found' : 'No blocks recorded yet'}
+              </p>
+              <p className="text-[#F5F5F5]/40 text-sm mt-1">
+                Certificates will appear here once issued by institutions
+              </p>
             </div>
-          ))}
-          {blockchainRecords.length === 0 && (
-            <p className="text-center text-[#F5F5F5]/50 py-8">No blocks recorded yet</p>
           )}
         </div>
       </div>
