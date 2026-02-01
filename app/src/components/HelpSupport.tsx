@@ -42,6 +42,7 @@ export default function HelpSupport({ compact = false }: HelpSupportProps) {
   const [initialMessage, setInitialMessage] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
   const [conversationSearch, setConversationSearch] = useState('');
+  const [recipientSearch, setRecipientSearch] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -108,6 +109,7 @@ export default function HelpSupport({ compact = false }: HelpSupportProps) {
     await messagingService.sendMessageAsync(conversation.id, initialMessage);
     setIsNewConversationOpen(false);
     setSelectedRecipient('');
+    setRecipientSearch('');
     setSubject('');
     setInitialMessage('');
     setCategory('general');
@@ -148,6 +150,16 @@ export default function HelpSupport({ compact = false }: HelpSupportProps) {
         return 'Student';
     }
   };
+
+  const filteredRecipients = recipients.filter((r) => {
+    if (!recipientSearch.trim()) return true;
+    const q = recipientSearch.toLowerCase().trim();
+    return (
+      r.name.toLowerCase().includes(q) ||
+      (r.email && r.email.toLowerCase().includes(q)) ||
+      (r.institutionName && r.institutionName.toLowerCase().includes(q))
+    );
+  });
 
   const filteredConversations = conversations.filter((conv) => {
     if (!conversationSearch.trim()) return true;
@@ -310,7 +322,7 @@ export default function HelpSupport({ compact = false }: HelpSupportProps) {
         </div>
 
         {/* New Conversation Dialog */}
-        <Dialog open={isNewConversationOpen} onOpenChange={setIsNewConversationOpen}>
+        <Dialog open={isNewConversationOpen} onOpenChange={(open) => { setIsNewConversationOpen(open); if (!open) setRecipientSearch(''); }}>
           <DialogContent className="bg-[#1A1A1A] border-[#4A4A4A] text-[#F5F5F5]">
             <DialogHeader>
               <DialogTitle>New Conversation</DialogTitle>
@@ -318,12 +330,21 @@ export default function HelpSupport({ compact = false }: HelpSupportProps) {
             <div className="space-y-4">
               <div>
                 <label className="text-sm text-[#F5F5F5]/70 mb-1 block">Recipient</label>
+                <div className="relative mb-2">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#F5F5F5]/40" />
+                  <Input
+                    value={recipientSearch}
+                    onChange={(e) => setRecipientSearch(e.target.value)}
+                    placeholder="Search by name, email, or institution..."
+                    className="pl-9 bg-[#4A4A4A]/20 border-[#4A4A4A] text-[#F5F5F5] placeholder:text-[#F5F5F5]/40"
+                  />
+                </div>
                 <Select value={selectedRecipient} onValueChange={setSelectedRecipient}>
                   <SelectTrigger className="bg-[#4A4A4A]/20 border-[#4A4A4A] text-[#F5F5F5]">
                     <SelectValue placeholder="Select recipient" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#1A1A1A] border-[#4A4A4A]">
-                    {recipients.map((recipient) => (
+                    {filteredRecipients.map((recipient) => (
                       <SelectItem key={recipient.id} value={recipient.id} className="text-[#F5F5F5]">
                         <div className="flex items-center gap-2">
                           {getRoleIcon(recipient.role)}
@@ -558,7 +579,7 @@ export default function HelpSupport({ compact = false }: HelpSupportProps) {
         </div>
 
         {/* New Conversation Dialog */}
-        <Dialog open={isNewConversationOpen} onOpenChange={setIsNewConversationOpen}>
+        <Dialog open={isNewConversationOpen} onOpenChange={(open) => { setIsNewConversationOpen(open); if (!open) setRecipientSearch(''); }}>
           <DialogContent className="bg-[#1A1A1A] border-[#4A4A4A] text-[#F5F5F5]">
             <DialogHeader>
               <DialogTitle>Start New Conversation</DialogTitle>
@@ -566,12 +587,21 @@ export default function HelpSupport({ compact = false }: HelpSupportProps) {
             <div className="space-y-4">
               <div>
                 <label className="text-sm text-[#F5F5F5]/70 mb-1 block">Recipient</label>
+                <div className="relative mb-2">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#F5F5F5]/40" />
+                  <Input
+                    value={recipientSearch}
+                    onChange={(e) => setRecipientSearch(e.target.value)}
+                    placeholder="Search by name, email, or institution..."
+                    className="pl-9 bg-[#4A4A4A]/20 border-[#4A4A4A] text-[#F5F5F5] placeholder:text-[#F5F5F5]/40"
+                  />
+                </div>
                 <Select value={selectedRecipient} onValueChange={setSelectedRecipient}>
                   <SelectTrigger className="bg-[#4A4A4A]/20 border-[#4A4A4A] text-[#F5F5F5]">
                     <SelectValue placeholder="Select recipient" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#1A1A1A] border-[#4A4A4A]">
-                    {recipients.map((recipient) => (
+                    {filteredRecipients.map((recipient) => (
                       <SelectItem key={recipient.id} value={recipient.id} className="text-[#F5F5F5]">
                         <div className="flex items-center gap-2">
                           {getRoleIcon(recipient.role)}
