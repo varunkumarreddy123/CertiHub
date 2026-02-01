@@ -379,6 +379,25 @@ export const messagingService = {
     return labels[category] || 'General';
   },
 
+  async deleteMessageAsync(messageId: string): Promise<void> {
+    const currentUser = authService.getCurrentUser();
+    if (!currentUser) throw new Error('User not authenticated');
+
+    if (isSupabaseEnabled() && supabase) {
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', messageId)
+        .eq('sender_id', currentUser.id);
+      if (error) throw new Error(error.message);
+      return;
+    }
+    const messages: Message[] = JSON.parse(localStorage.getItem(MESSAGES_KEY) || '[]');
+    const filtered = messages.filter((m) => !(m.id === messageId && m.senderId === currentUser.id));
+    if (filtered.length === messages.length) throw new Error('Message not found or not yours');
+    localStorage.setItem(MESSAGES_KEY, JSON.stringify(filtered));
+  },
+
   deleteConversation: (conversationId: string): void => {
     if (isSupabaseEnabled() && supabase) {
       supabase.from('messages').delete().eq('conversation_id', conversationId);

@@ -10,7 +10,8 @@ import {
   Building2, 
   Shield,
   Check,
-  CheckCheck
+  CheckCheck,
+  Trash2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
@@ -80,6 +82,18 @@ export default function HelpSupport({ compact = false }: HelpSupportProps) {
     setNewMessage('');
     await loadMessages(selectedConversation.id);
     await loadConversations();
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!selectedConversation) return;
+    try {
+      await messagingService.deleteMessageAsync(messageId);
+      await loadMessages(selectedConversation.id);
+      await loadConversations();
+      toast.success('Message deleted');
+    } catch (e) {
+      toast.error('Failed to delete message');
+    }
   };
 
   const handleStartConversation = async () => {
@@ -218,14 +232,24 @@ export default function HelpSupport({ compact = false }: HelpSupportProps) {
                   {messages.map((msg) => {
                     const isMine = msg.senderId === user?.id;
                     return (
-                      <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[80%] rounded-lg p-2 text-sm ${
+                      <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} group`}>
+                        <div className={`relative max-w-[80%] rounded-lg p-2 text-sm ${
                           isMine ? 'bg-[#D4AF37] text-black' : 'bg-[#4A4A4A]/50 text-[#F5F5F5]'
                         }`}>
                           <p>{msg.content}</p>
                           <div className={`flex items-center gap-1 mt-1 text-xs ${isMine ? 'text-black/60' : 'text-[#F5F5F5]/50'}`}>
                             <span>{new Date(msg.timestamp).toLocaleTimeString()}</span>
                             {isMine && (msg.isRead ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />)}
+                            {isMine && (
+                              <button
+                                onClick={() => handleDeleteMessage(msg.id)}
+                                className="ml-2 p-0.5 rounded hover:bg-black/20 text-black/70 hover:text-black"
+                                title="Delete message"
+                                type="button"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -445,6 +469,16 @@ export default function HelpSupport({ compact = false }: HelpSupportProps) {
                             <div className={`flex items-center gap-1 mt-1 text-xs ${isMine ? 'text-black/60' : 'text-[#F5F5F5]/50'}`}>
                               <span>{new Date(msg.timestamp).toLocaleTimeString()}</span>
                               {isMine && (msg.isRead ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />)}
+                              {isMine && (
+                                <button
+                                  onClick={() => handleDeleteMessage(msg.id)}
+                                  className="ml-2 p-0.5 rounded hover:bg-black/20 text-black/70 hover:text-black"
+                                  title="Delete message"
+                                  type="button"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>
