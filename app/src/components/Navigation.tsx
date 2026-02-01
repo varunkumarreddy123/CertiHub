@@ -158,6 +158,25 @@ export default function Navigation({ onNavigate, currentRoute }: NavigationProps
               
               {isAuthenticated ? (
                 <div className="pt-4 border-t border-[#4A4A4A]/30">
+                  <button
+                    onClick={() => {
+                      onNavigate('help');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full px-4 py-3 rounded-lg text-left font-medium transition-all flex items-center space-x-3 mb-2 ${
+                      currentRoute === 'help'
+                        ? 'bg-[#D4AF37]/20 text-[#D4AF37]'
+                        : 'text-[#F5F5F5]/70 hover:text-[#F5F5F5] hover:bg-[#4A4A4A]/50'
+                    }`}
+                  >
+                    <MessageSquare className="h-5 w-5 flex-shrink-0" />
+                    <span>Help & Support</span>
+                    {unreadCount > 0 && (
+                      <span className="ml-auto px-2 py-0.5 bg-[#DC3545] text-white text-xs rounded-full">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </button>
                   <div className="px-4 py-3 mb-2 bg-[#4A4A4A]/30 rounded-lg">
                     <p className="text-[#F5F5F5] font-medium">{user?.name}</p>
                     <p className="text-sm text-[#F5F5F5]/50">{user?.email}</p>
