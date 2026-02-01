@@ -114,24 +114,6 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
               )}
             </button>
           </form>
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#4A4A4A]" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-[#4A4A4A]/20 text-[#F5F5F5]/50">Demo Credentials</span>
-            </div>
-          </div>
-
-          {/* Demo Credentials */}
-          <div className="space-y-2 text-sm">
-            <div className="p-3 bg-[#1A1A1A] rounded-lg border border-[#4A4A4A]/50">
-              <p className="text-[#F5F5F5]/60">Super Admin:</p>
-              <p className="text-[#D4AF37] font-mono">superadmin@certichain.com / admin123</p>
-            </div>
-          </div>
         </div>
 
         {/* Sign Up Link */}

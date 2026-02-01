@@ -15,8 +15,9 @@ CREATE TABLE IF NOT EXISTS public.activity_logs (
 -- 2. Enable RLS (safe if already enabled)
 ALTER TABLE public.activity_logs ENABLE ROW LEVEL SECURITY;
 
--- 3. Drop existing policies if any
+-- 3. Drop existing policies if any (idempotent - safe to run multiple times)
 DROP POLICY IF EXISTS "Authenticated can read activity_logs" ON public.activity_logs;
+DROP POLICY IF EXISTS "Authenticated can insert activity_logs" ON public.activity_logs;
 DROP POLICY IF EXISTS "Allow read activity_logs" ON public.activity_logs;
 DROP POLICY IF EXISTS "Allow insert activity_logs" ON public.activity_logs;
 
