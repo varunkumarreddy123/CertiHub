@@ -84,6 +84,17 @@ export default function SuperAdminDashboard({ onNavigate }: SuperAdminDashboardP
   const pendingInstitutions = users.filter(u => u.role === 'admin' && !u.isVerified);
   const verifiedInstitutions = users.filter(u => u.role === 'admin' && u.isVerified);
 
+  // Count certificates per institution (match by institutionId or institutionName)
+  const getCertificateCount = (inst: User) => {
+    const byId = certificates.filter((c) => c.institutionId === inst.id).length;
+    if (byId > 0) return byId;
+    const instName = inst.institutionName?.toLowerCase().trim();
+    if (!instName) return 0;
+    return certificates.filter(
+      (c) => c.institutionName?.toLowerCase().trim() === instName
+    ).length;
+  };
+
   const statCards = [
     { label: 'Total Certificates', value: stats?.totalCertificates || 0, icon: FileCheck, color: 'text-[#D4AF37]', bgColor: 'bg-[#D4AF37]/10' },
     { label: 'Institutions', value: verifiedInstitutions.length, icon: Building2, color: 'text-[#28A745]', bgColor: 'bg-[#28A745]/10' },
@@ -253,8 +264,12 @@ export default function SuperAdminDashboard({ onNavigate }: SuperAdminDashboardP
                     </td>
                     <td className="px-4 py-3 text-[#F5F5F5]/70">{inst.email}</td>
                     <td className="px-4 py-3">
-                      <span className="px-2 py-1 bg-[#D4AF37]/20 text-[#D4AF37] rounded-full text-sm font-medium">
-                        {certificates.filter((c) => c.institutionId === inst.id).length}
+                      <span
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#D4AF37]/20 text-[#D4AF37] rounded-lg text-sm font-medium"
+                        title="Certificates issued by this institution"
+                      >
+                        <FileCheck className="h-4 w-4" />
+                        {getCertificateCount(inst)}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-[#F5F5F5]/70">{formatDate(inst.createdAt)}</td>
