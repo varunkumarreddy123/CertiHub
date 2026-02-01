@@ -240,6 +240,7 @@ export default function SuperAdminDashboard({ onNavigate }: SuperAdminDashboardP
                 <tr className="bg-[#4A4A4A]/30">
                   <th className="px-4 py-3 text-left text-sm font-medium text-[#F5F5F5]/70">Institution</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-[#F5F5F5]/70">Email</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-[#F5F5F5]/70">Certificates</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-[#F5F5F5]/70">Joined</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-[#F5F5F5]/70">Status</th>
                 </tr>
@@ -251,6 +252,11 @@ export default function SuperAdminDashboard({ onNavigate }: SuperAdminDashboardP
                       <p className="text-[#F5F5F5] font-medium">{inst.institutionName}</p>
                     </td>
                     <td className="px-4 py-3 text-[#F5F5F5]/70">{inst.email}</td>
+                    <td className="px-4 py-3">
+                      <span className="px-2 py-1 bg-[#D4AF37]/20 text-[#D4AF37] rounded-full text-sm font-medium">
+                        {certificates.filter((c) => c.institutionId === inst.id).length}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 text-[#F5F5F5]/70">{formatDate(inst.createdAt)}</td>
                     <td className="px-4 py-3">
                       <span className="px-2 py-1 bg-[#28A745]/20 text-[#28A745] rounded-full text-xs font-medium">
@@ -279,7 +285,7 @@ export default function SuperAdminDashboard({ onNavigate }: SuperAdminDashboardP
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search certificates..."
+            placeholder="Search by student, course, institution, or ID..."
             className="pl-9 pr-4 py-2 bg-[#4A4A4A]/20 border border-[#4A4A4A]/50 rounded-lg text-sm text-[#F5F5F5] placeholder-[#F5F5F5]/40 focus:outline-none focus:border-[#D4AF37] transition-colors"
           />
         </div>
@@ -300,8 +306,10 @@ export default function SuperAdminDashboard({ onNavigate }: SuperAdminDashboardP
             <tbody className="divide-y divide-[#4A4A4A]/30">
               {certificates
                 .filter(c => 
+                  !searchQuery ||
                   c.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                   c.courseName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  (c.institutionName && c.institutionName.toLowerCase().includes(searchQuery.toLowerCase())) ||
                   c.uniqueId.toLowerCase().includes(searchQuery.toLowerCase())
                 )
                 .map((cert) => (

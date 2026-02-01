@@ -35,8 +35,10 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
   };
 
   const filteredCertificates = certificates.filter(cert =>
+    !searchQuery ||
     cert.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     cert.courseName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (cert.institutionName && cert.institutionName.toLowerCase().includes(searchQuery.toLowerCase())) ||
     cert.uniqueId.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -105,7 +107,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search certificates by name, course, or ID..."
+            placeholder="Search by student, course, institution, or ID..."
             className="w-full pl-12 pr-4 py-3 bg-[#4A4A4A]/20 border border-[#4A4A4A]/50 rounded-lg text-[#F5F5F5] placeholder-[#F5F5F5]/40 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-colors"
           />
         </div>

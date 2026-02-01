@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { certificateService } from '@/services/certificate';
 import type { Certificate, DashboardStats, ActivityLog } from '@/types';
-import { Award, Plus, Users, FileCheck, TrendingUp, Activity, Loader2, X } from 'lucide-react';
+import { Award, Plus, Users, FileCheck, TrendingUp, Activity, Loader2, X, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AdminDashboardProps {
@@ -17,6 +17,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   const [activity, setActivity] = useState<ActivityLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showIssueModal, setShowIssueModal] = useState(false);
+  const [certSearchQuery, setCertSearchQuery] = useState('');
 
   // Issue form state
   const [formData, setFormData] = useState({
@@ -185,10 +186,28 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
     </div>
   );
 
+  const filteredCertificates = certificates.filter(cert =>
+    !certSearchQuery ||
+    cert.studentName.toLowerCase().includes(certSearchQuery.toLowerCase()) ||
+    cert.courseName.toLowerCase().includes(certSearchQuery.toLowerCase()) ||
+    (cert.institutionName && cert.institutionName.toLowerCase().includes(certSearchQuery.toLowerCase())) ||
+    cert.uniqueId.toLowerCase().includes(certSearchQuery.toLowerCase())
+  );
+
   const renderCertificates = () => (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h3 className="text-lg font-semibold text-[#F5F5F5]">All Certificates</h3>
+        <div className="relative flex-1 sm:max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#F5F5F5]/40" />
+          <input
+            type="text"
+            value={certSearchQuery}
+            onChange={(e) => setCertSearchQuery(e.target.value)}
+            placeholder="Search by student, course, institution, or ID..."
+            className="w-full pl-9 pr-4 py-2 bg-[#4A4A4A]/20 border border-[#4A4A4A]/50 rounded-lg text-sm text-[#F5F5F5] placeholder-[#F5F5F5]/40 focus:outline-none focus:border-[#D4AF37] transition-colors"
+          />
+        </div>
         <button
           onClick={() => setShowIssueModal(true)}
           className="px-4 py-2 bg-[#D4AF37] text-[#1A1A1A] rounded-lg hover:bg-[#C4A030] transition-colors flex items-center space-x-2"
@@ -210,7 +229,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#4A4A4A]/30">
-              {certificates.map((cert) => (
+              {filteredCertificates.map((cert) => (
                 <tr key={cert.id} className="hover:bg-[#4A4A4A]/10">
                   <td className="px-4 py-3">
                     <div>
@@ -230,7 +249,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
             </tbody>
           </table>
         </div>
-        {certificates.length === 0 && (
+        {filteredCertificates.length === 0 && (
           <div className="text-center py-8">
             <p className="text-[#F5F5F5]/50">No certificates issued yet</p>
           </div>
