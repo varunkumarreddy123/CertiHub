@@ -384,12 +384,16 @@ export const messagingService = {
     if (!currentUser) throw new Error('User not authenticated');
 
     if (isSupabaseEnabled() && supabase) {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('messages')
         .delete()
         .eq('id', messageId)
-        .eq('sender_id', currentUser.id);
+        .eq('sender_id', currentUser.id)
+        .select('id');
       if (error) throw new Error(error.message);
+      if (!data || data.length === 0) {
+        throw new Error('Message could not be deleted. Run messages_delete_policy.sql in Supabase SQL Editor.');
+      }
       return;
     }
     const messages: Message[] = JSON.parse(localStorage.getItem(MESSAGES_KEY) || '[]');

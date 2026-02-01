@@ -15,3 +15,8 @@ CREATE POLICY "Superadmins can delete profiles" ON public.profiles FOR DELETE US
 -- 2. Allow hash repair for certificate verification fix
 DROP POLICY IF EXISTS "Authenticated can update blockchain_anchors" ON public.blockchain_anchors;
 CREATE POLICY "Authenticated can update blockchain_anchors" ON public.blockchain_anchors FOR UPDATE USING (auth.role() = 'authenticated');
+
+-- 3. Allow users to delete their own messages
+DROP POLICY IF EXISTS "Users can delete own messages" ON public.messages;
+CREATE POLICY "Users can delete own messages" ON public.messages
+  FOR DELETE USING (auth.uid() = sender_id);

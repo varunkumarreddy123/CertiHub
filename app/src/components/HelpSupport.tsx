@@ -11,7 +11,8 @@ import {
   Shield,
   Check,
   CheckCheck,
-  Trash2
+  Trash2,
+  Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +41,7 @@ export default function HelpSupport({ compact = false }: HelpSupportProps) {
   const [category, setCategory] = useState<Conversation['category']>('general');
   const [initialMessage, setInitialMessage] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
+  const [conversationSearch, setConversationSearch] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -86,13 +88,17 @@ export default function HelpSupport({ compact = false }: HelpSupportProps) {
 
   const handleDeleteMessage = async (messageId: string) => {
     if (!selectedConversation) return;
+    // Optimistic update: remove from UI immediately
+    setMessages((prev) => prev.filter((m) => m.id !== messageId));
     try {
       await messagingService.deleteMessageAsync(messageId);
       await loadMessages(selectedConversation.id);
       await loadConversations();
       toast.success('Message deleted');
     } catch (e) {
-      toast.error('Failed to delete message');
+      // Restore on failure
+      await loadMessages(selectedConversation.id);
+      toast.error('Failed to delete message. Run messages_delete_policy.sql in Supabase.');
     }
   };
 
@@ -143,27 +149,47 @@ export default function HelpSupport({ compact = false }: HelpSupportProps) {
     }
   };
 
+  const filteredConversations = conversations.filter((conv) => {
+    if (!conversationSearch.trim()) return true;
+    const q = conversationSearch.toLowerCase().trim();
+    const otherParticipant = conv.participants.find((p) => p.id !== user?.id);
+    return (
+      conv.subject.toLowerCase().includes(q) ||
+      otherParticipant?.name.toLowerCase().includes(q) ||
+      messagingService.getCategoryLabel(conv.category).toLowerCase().includes(q)
+    );
+  });
+
   if (compact) {
     return (
       <div className="bg-[#1A1A1A] rounded-xl border border-[#4A4A4A]/50 h-[500px] flex">
         {/* Conversations List */}
         <div className="w-64 border-r border-[#4A4A4A]/50 flex flex-col">
           <div className="p-4 border-b border-[#4A4A4A]/50">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-2">
               <h3 className="font-semibold text-[#F5F5F5]">Messages</h3>
               {unreadCount > 0 && (
                 <Badge className="bg-[#D4AF37] text-black">{unreadCount}</Badge>
               )}
             </div>
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-[#F5F5F5]/40" />
+              <Input
+                value={conversationSearch}
+                onChange={(e) => setConversationSearch(e.target.value)}
+                placeholder="Search by subject or name..."
+                className="pl-8 h-9 bg-[#4A4A4A]/20 border-[#4A4A4A]/50 text-[#F5F5F5] text-sm placeholder:text-[#F5F5F5]/40"
+              />
+            </div>
           </div>
           <ScrollArea className="flex-1">
-            {conversations.length === 0 ? (
+            {filteredConversations.length === 0 ? (
               <div className="p-4 text-center text-[#F5F5F5]/50">
                 <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No conversations</p>
+                <p className="text-sm">{conversationSearch ? 'No matching conversations' : 'No conversations'}</p>
               </div>
             ) : (
-              conversations.map((conv) => {
+              filteredConversations.map((conv) => {
                 const otherParticipant = conv.participants.find(p => p.id !== user?.id);
                 return (
                   <button
@@ -372,7 +398,7 @@ export default function HelpSupport({ compact = false }: HelpSupportProps) {
           {/* Conversations List */}
           <div className="w-80 border-r border-[#4A4A4A]/50 flex flex-col">
             <div className="p-4 border-b border-[#4A4A4A]/50">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-[#F5F5F5]">Conversations</h3>
                 <Button 
                   onClick={() => setIsNewConversationOpen(true)} 
@@ -383,16 +409,25 @@ export default function HelpSupport({ compact = false }: HelpSupportProps) {
                   New
                 </Button>
               </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#F5F5F5]/40" />
+                <Input
+                  value={conversationSearch}
+                  onChange={(e) => setConversationSearch(e.target.value)}
+                  placeholder="Search by subject or name..."
+                  className="pl-9 h-9 bg-[#4A4A4A]/20 border-[#4A4A4A]/50 text-[#F5F5F5] text-sm placeholder:text-[#F5F5F5]/40"
+                />
+              </div>
             </div>
             <ScrollArea className="flex-1">
-              {conversations.length === 0 ? (
+              {filteredConversations.length === 0 ? (
                 <div className="p-4 text-center text-[#F5F5F5]/50">
                   <MessageSquare className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>No conversations yet</p>
-                  <p className="text-sm mt-1">Start a new conversation</p>
+                  <p>{conversationSearch ? 'No matching conversations' : 'No conversations yet'}</p>
+                  {!conversationSearch && <p className="text-sm mt-1">Start a new conversation</p>}
                 </div>
               ) : (
-                conversations.map((conv) => {
+                filteredConversations.map((conv) => {
                   const otherParticipant = conv.participants.find(p => p.id !== user?.id);
                   return (
                     <button
