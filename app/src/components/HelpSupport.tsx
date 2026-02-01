@@ -190,40 +190,44 @@ export default function HelpSupport({ compact = false }: HelpSupportProps) {
           </button>
         )}
       </div>
-      <p className="text-xs text-[#F5F5F5]/50 mt-1 mb-2">Recommended recipients</p>
-      <div className="max-h-40 overflow-y-auto rounded-lg border border-[#4A4A4A]/50 bg-[#1A1A1A]">
-        {displayRecipientList.slice(0, 10).map((recipient) => (
-          <button
-            key={recipient.id}
-            type="button"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => {
-              setSelectedRecipient(recipient.id);
-              setRecipientSearch('');
-            }}
-            className={`w-full px-3 py-2.5 text-left flex items-center gap-3 hover:bg-[#4A4A4A]/30 transition-colors border-b border-[#4A4A4A]/30 last:border-0 ${
-              selectedRecipient === recipient.id ? 'bg-[#D4AF37]/20' : ''
-            }`}
-          >
-            <Avatar className="h-8 w-8 flex-shrink-0">
-              <AvatarFallback className="bg-[#D4AF37]/20 text-[#D4AF37] text-xs">
-                {recipient.name.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-[#F5F5F5] truncate">{recipient.name}</p>
-              <p className="text-xs text-[#F5F5F5]/50 truncate">
-                {getRoleLabel(recipient.role)}
-                {recipient.institutionName && ` · ${recipient.institutionName}`}
-              </p>
-            </div>
-            {getRoleIcon(recipient.role)}
-          </button>
-        ))}
-        {displayRecipientList.length === 0 && (
-          <p className="px-3 py-4 text-center text-sm text-[#F5F5F5]/50">No recipients found</p>
-        )}
-      </div>
+      {!selectedRecipient && (
+        <>
+          <p className="text-xs text-[#F5F5F5]/50 mt-1 mb-2">Recommended recipients</p>
+          <div className="max-h-40 overflow-y-auto rounded-lg border border-[#4A4A4A]/50 bg-[#1A1A1A]">
+            {displayRecipientList.slice(0, 10).map((recipient) => (
+              <button
+                key={recipient.id}
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  setSelectedRecipient(recipient.id);
+                  setRecipientSearch('');
+                }}
+                className={`w-full px-3 py-2.5 text-left flex items-center gap-3 hover:bg-[#4A4A4A]/30 transition-colors border-b border-[#4A4A4A]/30 last:border-0 ${
+                  selectedRecipient === recipient.id ? 'bg-[#D4AF37]/20' : ''
+                }`}
+              >
+                <Avatar className="h-8 w-8 flex-shrink-0">
+                  <AvatarFallback className="bg-[#D4AF37]/20 text-[#D4AF37] text-xs">
+                    {recipient.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-[#F5F5F5] truncate">{recipient.name}</p>
+                  <p className="text-xs text-[#F5F5F5]/50 truncate">
+                    {getRoleLabel(recipient.role)}
+                    {recipient.institutionName && ` · ${recipient.institutionName}`}
+                  </p>
+                </div>
+                {getRoleIcon(recipient.role)}
+              </button>
+            ))}
+            {displayRecipientList.length === 0 && (
+              <p className="px-3 py-4 text-center text-sm text-[#F5F5F5]/50">No recipients found</p>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 
