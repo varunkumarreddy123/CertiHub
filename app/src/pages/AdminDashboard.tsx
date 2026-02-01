@@ -413,7 +413,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-[#F5F5F5] mb-2">Expiry Date</label>
+                      <label className="block text-sm font-medium text-[#F5F5F5] mb-2">Expiry Date (Optional)</label>
                       <input
                         type="date"
                         value={formData.expiryDate}
