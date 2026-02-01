@@ -222,7 +222,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
               </span>
             </div>
             <div className="text-[#F5F5F5]/50 text-sm">
-              © 2024 CertiChain. All rights reserved. Built for Final Year Project.
+              © 2026 CertiChain. All rights reserved. Built for Final Year Project.
             </div>
           </div>
         </div>
